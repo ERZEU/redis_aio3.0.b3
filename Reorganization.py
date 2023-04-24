@@ -1,16 +1,14 @@
-from typing import Dict, Any
-
 from aiogram import Router
 from aiogram.types import ReplyKeyboardMarkup, Message, KeyboardButton, ReplyKeyboardRemove
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
 from aiogram.dispatcher.filters.command import Command
 from aiogram import F
 from aiogram.dispatcher.fsm.state import StatesGroup, State
 from aiogram.dispatcher.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 
+from Keyboards import make_row_keyboard, make_column_keyboard
 from loguru import logger
-from main import bot, redis
+
 
 
 router = Router()
@@ -21,21 +19,6 @@ class StateClsReorg(StatesGroup):
     processing_data = State()  # состояние предоставления документов
     prepare_data = State()  # состояние обработки документов
     end_of_script = State()  # завершение сценария
-
-
-def make_row_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
-    """Создаёт реплай-клавиатуру с кнопками в один ряд"""
-    row = [KeyboardButton(text=item) for item in items]
-    return ReplyKeyboardMarkup(keyboard=[row], resize_keyboard=True, one_time_keyboard=True)
-
-
-def make_column_keyboard(items: list[str]) -> ReplyKeyboardMarkup:
-    """Создаёт реплай-клавиатуру с кнопками в несколько рядов"""
-    builder = ReplyKeyboardBuilder()
-    for i in items:
-        builder.add(KeyboardButton(text=str(i)))
-    builder.adjust(1)
-    return builder.as_markup(resize_keyboard=True, one_time_keyboard=True)
 
 
 methods_reorg = [
@@ -52,7 +35,6 @@ methods_feedback = [
     "ЭДО",
     "Электронная почта"
 ]
-
 
 
 @router.message(Command(commands=["reorg"]))
@@ -137,10 +119,10 @@ async def stage(message: Message, state: FSMContext):
 
     if document := message.document:
         logger.info(f'User : {message.from_user.id}  document_id: {document.file_id}')
-        await redis.append(key=str(message.from_user.id), value=str(document.file_id))
-        file = await bot.get_file(document.file_id)
-        file_path = file.file_path
-        await bot.download_file(file_path=file_path, destination=f"download_doc/{document.file_name}")
+        # await redis.append(key=str(message.from_user.id), value=str(document.file_id))
+        # file = await bot.get_file(document.file_id)
+        # file_path = file.file_path
+        # await bot.download_file(file_path=file_path, destination=f"download_doc/{document.file_name}")
     else:
         await message.answer(text='Неверный формат сообщения')
 
