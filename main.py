@@ -4,7 +4,7 @@ from aiogram.dispatcher.fsm.storage.redis import RedisStorage
 from redis import asyncio as aioredis
 from backend.logginger import write_log_files
 
-from headers import Change_of_CEO, Reorganization, Optional_equipment
+from headers import Change_of_CEO, Reorganization, Optional_equipment, Prolongation
 
 bot = Bot(token="6134271801:AAEORCsghLeLGW-GDv0uwB8TMcnK_mMyF_M")
 redis = aioredis.Redis.from_url("redis://localhost:6379/3")
@@ -18,6 +18,7 @@ async def main():
     dp.include_router(Reorganization.router)
     dp.include_router(Optional_equipment.router)
     dp.include_router(Change_of_CEO.router)
+    dp.include_router(Prolongation.router)
 
     # Запускаем бота и пропускаем все накопленные входящие
     await bot.delete_webhook(drop_pending_updates=True)
