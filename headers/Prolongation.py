@@ -65,11 +65,10 @@ async def stage(message: Message, state: FSMContext):
 async def stage(message: Message, state: FSMContext):
     """Выбор активности для КАСКО"""
 
+    logger.info(f'User : {message.from_user.id}  send: {message.text}')
     await state.update_data(choice_insurance=message.text)
     await message.answer(text="Что Вам необходимо?",
                          reply_markup=make_column_keyboard(choice_action))
-
-    logger.info(f'User : {message.from_user.id}  send: {message.text}')
 
     await state.set_state(StateClsProlongation.processing_data)
 
@@ -78,6 +77,7 @@ async def stage(message: Message, state: FSMContext):
 @logger.catch
 async def stage(message: Message, state: FSMContext):
     """Запрос счета на пролонгацию"""
+    logger.info(f'User : {message.from_user.id}  send: {message.text}')
 
     # Отправка данных по обращению
 
@@ -89,6 +89,7 @@ async def stage(message: Message, state: FSMContext):
 @logger.catch
 async def stage(message: Message, state: FSMContext):
     """Смена страховой компании  или  Включить/исключить франшизу из полиса"""
+    logger.info(f'User : {message.from_user.id}  send: {message.text}')
 
     await message.answer(text="Сколько дней осталось до пролонгации полиса?",
                          reply_markup=make_column_keyboard(choice_time))
@@ -101,6 +102,8 @@ async def stage(message: Message, state: FSMContext):
 async def stage(message: Message, state: FSMContext):
     """Если более 20 рабочих дней"""
 
+    logger.info(f'User : {message.from_user.id}  send: {message.text}')
+
     # Отправка данных по обращению
 
     await message.answer(text="Благодарим за обращение!")
@@ -112,6 +115,7 @@ async def stage(message: Message, state: FSMContext):
 async def stage(message: Message, state: FSMContext):
     """Если менее 20 рабочих дней"""
 
+    logger.info(f'User : {message.from_user.id}  send: {message.text}')
     await message.answer(text=f'Уважаемый клиент, добрый день!'
         f'\nВ соответствии с п. 1.11 Договора лизинга, страхование осуществляется в соответствии с разделом 5 общих условий.' 
         f'\nСогласно пункту  5.19. общих условий,  В случае намерения Лизингополучателя заменить Страховщика и/или изменить цели ' 
@@ -123,5 +127,6 @@ async def stage(message: Message, state: FSMContext):
 @router.message()
 @logger.catch
 async def stage(message: Message, state: FSMContext):
+    logger.debug(f'User : {message.from_user.id}  send: {message.text}')
     await message.answer(text='Я такого не умею(')
 
