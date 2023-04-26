@@ -2,12 +2,9 @@ import asyncio
 from aiogram import Bot, Dispatcher
 from aiogram.dispatcher.fsm.storage.redis import RedisStorage
 from redis import asyncio as aioredis
-from logginger import write_log_files
+from backend.logginger import write_log_files
 
-import Reorganization
-import Optional_equipment
-import Change_of_CEO
-
+from headers import Change_of_CEO, Reorganization, Optional_equipment
 
 bot = Bot(token="6134271801:AAEORCsghLeLGW-GDv0uwB8TMcnK_mMyF_M")
 redis = aioredis.Redis.from_url("redis://localhost:6379/3")

@@ -6,7 +6,7 @@ from aiogram.dispatcher.fsm.state import StatesGroup, State
 from aiogram.dispatcher.fsm.context import FSMContext
 from aiogram.types import FSInputFile
 
-from Keyboards import make_row_keyboard, make_column_keyboard
+from backend.Keyboards import make_row_keyboard, make_column_keyboard
 from loguru import logger
 
 
@@ -76,7 +76,7 @@ async def stage(message: Message, state: FSMContext):
 
     logger.info(f'User : {message.from_user.id}  send: {message.text}')
 
-    sopd = FSInputFile('files/СОПД.pdf')
+    sopd = FSInputFile('./files/СОПД.pdf')
     await message.answer_document(sopd)
     await message.answer(text='Готовы ли Вы сейчас приложить указанные документы?',
                          reply_markup=make_row_keyboard(["Да", "Нет"]))
