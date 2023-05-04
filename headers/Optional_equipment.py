@@ -1,11 +1,16 @@
+from contextlib import suppress
+
 from aiogram import Router
+from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Message
 from aiogram.dispatcher.filters.command import Command
 from aiogram import F
 from aiogram.dispatcher.fsm.state import StatesGroup, State
 from aiogram.dispatcher.fsm.context import FSMContext
+from aiogram import types
 
-from backend.Keyboards import make_row_keyboard, make_column_keyboard
+from backend.Keyboards import make_inline_keyboard, NumbersCallFactory, make_inline_keyboard_double, \
+    make_inline_keyboard_one, replace_keyboard
 from loguru import logger
 
 
@@ -20,7 +25,10 @@ class StateClsOptionalEquipment(StatesGroup):
     end_of_script = State()  # завершение сценария
 
 
-type_ts = ["Новый", "С пробегом(Б/У)"]
+type_ts = {"Новый" : "ts_new",
+           "С пробегом(Б/У)" : "ts_by"}
+
+module = "Optional_equipment"
 
 
 @router.message(Command(commands=["addOE"]))
@@ -28,47 +36,67 @@ type_ts = ["Новый", "С пробегом(Б/У)"]
 async def cmd_start(message: Message, state: FSMContext):
     logger.info(f'User : {message.from_user.id}  send: {message.text}')
     await message.answer(text="Укажите состояние ТС на момент заключения договора",
-                         reply_markup=make_column_keyboard(type_ts))
+                         reply_markup=make_inline_keyboard(par=type_ts,
+                                                           module=module))
     await state.set_state(StateClsOptionalEquipment.processing_state)
 
 
-@router.message(StateClsOptionalEquipment.processing_state, F.text.in_(type_ts[1]))
+@router.callback_query(NumbersCallFactory.filter(F.action == "ts_by"))
 @logger.catch
-async def stage(message: Message, state: FSMContext):
-    logger.info(f'User : {message.from_user.id}  send: {message.text}')
-    await state.update_data(state_ts=message.text)
-    await message.answer(text="Укажите вид оборудования")
+async def stage(callback: types.CallbackQuery, state: FSMContext):
+    btn_pressed = callback.data.split(":")[3]
+    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+
+    with suppress(TelegramBadRequest):
+        await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
+                                                                               keyboard=type_ts,
+                                                                               key_pressed=btn_pressed,
+                                                                               action="pressed"))
+    await state.update_data(state_ts=btn_pressed)
+    await callback.message.answer(text="Укажите вид оборудования")
     await state.set_state(StateClsOptionalEquipment.confirmation)
 
 
-@router.message(StateClsOptionalEquipment.processing_state, F.text.in_(type_ts[0]))
+@router.callback_query(NumbersCallFactory.filter(F.action == "ts_new"))
 @logger.catch
-async def stage(message: Message, state: FSMContext):
-    logger.info(f'User : {message.from_user.id}  send: {message.text}')
-    await state.update_data(state_ts=message.text)
-    await message.answer(text=f'Для согласования установки дополнительного оборудования Вам необходимо:'
+async def stage(callback: types.CallbackQuery, state: FSMContext):
+    btn_pressed = callback.data.split(":")[3]
+    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+
+    with suppress(TelegramBadRequest):
+        await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
+                                                                               keyboard=type_ts,
+                                                                               key_pressed=btn_pressed,
+                                                                               action="pressed"))
+    await state.update_data(state_ts=btn_pressed)
+    await callback.message.answer(text=f'Для согласования установки дополнительного оборудования Вам необходимо:'
                               f'\n⦿ Запросить письмо у поставщика, подтверждающее сохранение гарантийных '
                               f'и/или иных обязательств, после установки вышеупомянутого оборудования'
                               f'\n⦿ Загрузить письмо от поставщика, подтверждающее сохранение гарантийных'
                               f'и/или иных обязательств, после установки вышеупомянутого оборудования.')
-    await message.answer(text=f'Готовы загрузить письмо от поставщика в настоящее время?',
-                         reply_markup=make_row_keyboard(["Да", "Нет"]))
+    await callback.message.answer(text=f'Готовы загрузить письмо от поставщика в настоящее время?',
+                                  reply_markup=make_inline_keyboard_double(par={"Да": "yes", "Нет": "no"},
+                                                                           module=module,
+                                                                           action="yn"))
     await state.set_state(StateClsOptionalEquipment.processing_data)
 
 
-@router.message(StateClsOptionalEquipment.processing_data, F.text.casefold() == "да")
+@router.callback_query(NumbersCallFactory.filter(F.value == f'{module}_yes'))
 @logger.catch
-async def stage(message: Message, state: FSMContext):
-    logger.info(f'User : {message.from_user.id}  send: {message.text}')
-    await message.answer(text="Приложите письмо от поставщика в виде файла")
+async def stage(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete_reply_markup()
+    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    await callback.message.answer(text="Приложите письмо от поставщика в виде файла")
     await state.set_state(StateClsOptionalEquipment.prepare_data)
 
 
-@router.message(StateClsOptionalEquipment.processing_data, F.text.casefold() == "нет")
+@router.callback_query(NumbersCallFactory.filter(F.value == f'{module}_no'))
 @logger.catch
-async def stage(message: Message, state: FSMContext):
-    logger.info(f'User : {message.from_user.id}  send: {message.text}')
-    await message.answer(text="После получения письма от поставщика снова выберите данный тип обращения в Telegram-боте")
+async def stage(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete_reply_markup()
+    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    await callback.message.answer(text="После получения письма от поставщика снова выберите данный тип обращения в Telegram-боте")
+    await state.clear()
 
 
 @router.message(StateClsOptionalEquipment.prepare_data)
@@ -99,28 +127,28 @@ async def stage(message: Message, state: FSMContext):
 
     logger.info(f'User : {message.from_user.id}  send: {message.text}')
 
-    data = await state.get_data()
-    await message.answer(text=f'Состояние тс - {data["state_ts"]}'
-                         f'\nВид оборудования - {data["type_equipment"]}')
-
     await message.answer(text="Подтвердите создание обращения по установке дополнительного оборудования",
-                         reply_markup=make_row_keyboard(["Подтвердить", "Отмена"]))
+                         reply_markup=make_inline_keyboard_double(par={"Подтвердить": "cfn", "Отмена": "cnl"},
+                                                                  module=module,
+                                                                  action="complete"))
     await state.set_state(StateClsOptionalEquipment.end_of_script)
 
 
-@router.message(StateClsOptionalEquipment.end_of_script, F.text.casefold() == "подтвердить")
+@router.callback_query(NumbersCallFactory.filter(F.value == f'{module}_cfn'))
 @logger.catch
-async def stage(message: Message, state: FSMContext):
+async def stage(callback: types.CallbackQuery, state: FSMContext):
     """Формирование заявки"""
+    await callback.message.delete_reply_markup()
 
-    await message.answer(text="Благодарим за обращение! Заявка на установку дополнительного оборудования принята.")
+    await callback.message.answer(text="Благодарим за обращение! Заявка на установку дополнительного оборудования принята.")
     await state.clear()
 
 
-@router.message(StateClsOptionalEquipment.end_of_script, F.text.casefold() == "отмена")
+@router.callback_query(NumbersCallFactory.filter(F.value == f'{module}_cnl'))
 @logger.catch
-async def stage(message: Message, state: FSMContext):
-    await message.answer(text="Благодарим за обращение! Действия отменены.")
+async def stage(callback: types.CallbackQuery, state: FSMContext):
+    await callback.message.delete_reply_markup()
+    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    await callback.message.answer(text="Действия отменены.")
     await state.clear()
-
 
