@@ -45,7 +45,7 @@ async def cmd_start(message: Message, state: FSMContext):
 @logger.catch
 async def stage(callback: types.CallbackQuery, state: FSMContext):
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
@@ -61,7 +61,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
 @logger.catch
 async def stage(callback: types.CallbackQuery, state: FSMContext):
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
@@ -85,7 +85,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
 @logger.catch
 async def stage(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete_reply_markup()
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
     await callback.message.answer(text="Приложите письмо от поставщика в виде файла")
     await state.set_state(StateClsOptionalEquipment.prepare_data)
 
@@ -94,7 +94,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
 @logger.catch
 async def stage(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete_reply_markup()
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
     await callback.message.answer(text="После получения письма от поставщика снова выберите данный тип обращения в Telegram-боте")
     await state.clear()
 
@@ -148,7 +148,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
 @logger.catch
 async def stage(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete_reply_markup()
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
     await callback.message.answer(text="Действия отменены.")
     await state.clear()
 

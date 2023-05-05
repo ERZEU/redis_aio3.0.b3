@@ -89,7 +89,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """ КАСКО """
 
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
@@ -109,7 +109,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """Действия при ДТП"""
 
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
@@ -127,7 +127,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """ Конструктивная гибель/угон """
 
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
@@ -161,7 +161,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """Письмо на выплату для КАСКО и ОСАГО + Возмещение УТС"""
 
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
     data = await state.get_data()
 
     with suppress(TelegramBadRequest):
@@ -227,10 +227,10 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     btn_pressed = callback.data.split(":")[2][23:24]
 
     if btn_pressed == "y":
-        logger.info(f'User : {callback.message.from_user.id}  send: Да')
+        logger.info(f'User : {callback.from_user.id}  send: Да')
         await state.update_data(set_of_documents="Да")
     else:
-        logger.info(f'User : {callback.message.from_user.id}  send: Нет')
+        logger.info(f'User : {callback.from_user.id}  send: Нет')
         await state.update_data(set_of_documents="Нет")
 
     await state.update_data(stage=5)
@@ -247,10 +247,10 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     btn_pressed = callback.data.split(":")[2][23:24]
 
     if btn_pressed == "y":
-        logger.info(f'User : {callback.message.from_user.id}  send: Да')
+        logger.info(f'User : {callback.from_user.id}  send: Да')
         await state.update_data(damage_ts="Да")
     else:
-        logger.info(f'User : {callback.message.from_user.id}  send: Нет')
+        logger.info(f'User : {callback.from_user.id}  send: Нет')
         await state.update_data(damage_ts="Нет")
 
     await state.update_data(stage=6)
@@ -262,14 +262,16 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
 async def stage(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete_reply_markup()
     btn_pressed = callback.data.split(":")[2][23:24]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+
     if btn_pressed == "y":
+        logger.info(f'User : {callback.from_user.id}  send: Да')
         await state.update_data(repair_ts="Да")
         await callback.message.answer(text=questions[7],
                                       reply_markup=make_inline_keyboard_double(par={"Да": "stage_8_y", "Нет": "stage_8_n"},
                                                                                module=module,
                                                                                action="yn"))
     else:
+        logger.info(f'User : {callback.from_user.id}  send: Нет')
         await state.update_data(repair_ts="Нет")
         await callback.message.answer(text="Подтвердите создание обращения",
                                       reply_markup=make_inline_keyboard_double(par={"Подтвердить": "cfn_lp", "Отмена": "cnl"},
@@ -284,10 +286,10 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     btn_pressed = callback.data.split(":")[2][23:24]
 
     if btn_pressed == "y":
-        logger.info(f'User : {callback.message.from_user.id}  send: Да')
+        logger.info(f'User : {callback.from_user.id}  send: Да')
         await state.update_data(insurance_inspection="Да")
     else:
-        logger.info(f'User : {callback.message.from_user.id}  send: Нет')
+        logger.info(f'User : {callback.from_user.id}  send: Нет')
         await state.update_data(insurance_inspection="Нет")
     await callback.message.answer(text="Подтвердите создание обращения",
                                   reply_markup=make_inline_keyboard_double(par={"Подтвердить": "cfn_lp", "Отмена": "cnl_lp"},
@@ -299,13 +301,14 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
 @logger.catch
 async def stage(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.edit_text(text="Действия отменены.")
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
     await state.clear()
 
 
 @router.callback_query(NumbersCallFactory.filter(F.value == f'{module}_cfn_lp'))
 @logger.catch
 async def stage(callback: types.CallbackQuery, state: FSMContext):
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
     await callback.message.edit_text(text="Благодарим за обращение!")
     data = await state.get_data()
     answers = dict()
@@ -364,7 +367,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """Сложности со страховой компанией для КАСКО и ОСАГО"""
 
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
     data = await state.get_data()
 
     with suppress(TelegramBadRequest):
@@ -403,7 +406,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """ Отказ в урегулировании убытка """
 
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
@@ -433,7 +436,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """ ОСАГО """
 
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
@@ -453,7 +456,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """Действия при ДТП ОСАГО"""
 
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
@@ -473,7 +476,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """ Письмо на выплату ОСАГО"""
 
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
@@ -492,7 +495,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """ Письмо о выдачи направления на ремонт """
 
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
@@ -539,10 +542,10 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     btn_pressed = callback.data.split(":")[2][23:24]
 
     if btn_pressed == "y":
-        logger.info(f'User : {callback.message.from_user.id}  send: Да')
+        logger.info(f'User : {callback.from_user.id}  send: Да')
         await state.update_data(damage_ts="Да")
     else:
-        logger.info(f'User : {callback.message.from_user.id}  send: Нет')
+        logger.info(f'User : {callback.from_user.id}  send: Нет')
         await state.update_data(damage_ts="Нет")
 
     await state.update_data(stage=5)
@@ -559,10 +562,10 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     btn_pressed = callback.data.split(":")[2][23:24]
 
     if btn_pressed == "y":
-        logger.info(f'User : {callback.message.from_user.id}  send: Да')
+
         await state.update_data(repair_ts="Да")
     else:
-        logger.info(f'User : {callback.message.from_user.id}  send: Нет')
+        logger.info(f'User : {callback.from_user.id}  send: Нет')
         await state.update_data(repair_ts="Нет")
 
     await callback.message.answer(text="Подтвердите создание обращения",
@@ -577,7 +580,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """ Возмещение франшизы """
 
     btn_pressed = callback.data.split(":")[3]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     with suppress(TelegramBadRequest):
         await callback.message.edit_reply_markup(reply_markup=replace_keyboard(module=module,
@@ -615,17 +618,16 @@ async def stage(message: Message, state: FSMContext):
 async def stage(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete_reply_markup()
     btn_pressed = callback.data.split(":")[2][23:24]
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
 
     if btn_pressed == "y":
-        logger.info(f'User : {callback.message.from_user.id}  send: Да')
+        logger.info(f'User : {callback.from_user.id}  send: Да')
         await state.update_data(repair_ts="Да")
         await callback.message.answer(text="Предоставлен ли ТС на осмотр в страховую компанию после ремонта?",
                                       reply_markup=make_inline_keyboard_double(par={"Да": "stage_g_y", "Нет": "stage_g_n"},
                                                                                module=module,
                                                                                action="yn"))
     else:
-        logger.info(f'User : {callback.message.from_user.id}  send: Нет')
+        logger.info(f'User : {callback.from_user.id}  send: Нет')
         await state.update_data(repair_ts="Нет")
         await callback.message.answer(text="Подтвердите создание обращения",
                                       reply_markup=make_inline_keyboard_double(par={"Подтвердить": "cfn_lp", "Отмена": "cnl_lp"},
@@ -641,10 +643,10 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
 
     if btn_pressed == "y":
         await state.update_data(insurance_inspection="Да")
-        logger.info(f'User : {callback.message.from_user.id}  send: Да')
+        logger.info(f'User : {callback.from_user.id}  send: Да')
     else:
         await state.update_data(insurance_inspection="Нет")
-        logger.info(f'User : {callback.message.from_user.id}  send: Нет')
+        logger.info(f'User : {callback.from_user.id}  send: Нет')
 
     await callback.message.answer(text="Подтвердите создание обращения",
                                   reply_markup=make_inline_keyboard_double(par={"Подтвердить": "cfn_lp", "Отмена": "cnl_lp"},

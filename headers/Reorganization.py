@@ -87,7 +87,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
                  f'\n⦿ Протокол / решение о реорганизации'
                  f'\n⦿ Разделительный баланс и передаточный акт')
 
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     sopd = FSInputFile('./files/СОПД.pdf')
     await callback.message.answer_document(sopd)
@@ -101,7 +101,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
 @router.callback_query(NumbersCallFactory.filter(F.value == f'{module}_no'))
 @logger.catch
 async def stage(callback: types.CallbackQuery, state: FSMContext):
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
     await callback.message.delete_reply_markup()
     await callback.message.answer(text='Когда будете готовы приложить все вышеуказанные документы снова выберите данный тип обращения в Telegram - боте')
     await state.clear()
@@ -110,7 +110,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
 @router.callback_query(NumbersCallFactory.filter(F.value == f'{module}_yes'))
 @logger.catch
 async def stage(callback: types.CallbackQuery, state: FSMContext):
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
     await callback.message.delete_reply_markup()
     await callback.message.answer(text="После того, как приложите все документы, нажмите кнопку ниже",
                                   reply_markup=make_inline_keyboard_one(module=module,
@@ -123,7 +123,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
 @router.callback_query(NumbersCallFactory.filter(F.action == f'{module}_doc_conf'))
 @logger.catch
 async def stage(callback: types.CallbackQuery, state: FSMContext):
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
     await callback.message.delete_reply_markup()
     await callback.message.answer(text="В случае положительного решения каким образом необходимо направить документы",
                                   reply_markup=make_inline_keyboard(par=methods_feedback, module=f'{module}_END'))
@@ -163,7 +163,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
 
     await state.update_data(method_feedback=btn_pressed)
     data = await state.get_data()
-    text = f'\nUser : {callback.message.from_user.id} \nType_reorg: {data["name_reorg"]} \nmethod_feedback : {data["method_feedback"]}'
+    text = f'\nUser : {callback.from_user.id} \nType_reorg: {data["name_reorg"]} \nmethod_feedback : {data["method_feedback"]}'
     logger.success(text)
 
     await state.clear()

@@ -77,7 +77,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
                  f'\n⦿ Анкета'
                  f'\nДокументы необходимо прикрепить файлами в данный Telegram бот.')
 
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     sopd = FSInputFile('./files/СОПД.pdf')
     # anketa = FSInputFile('files/')   #уточнить
@@ -109,7 +109,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
                                                                         text="Завершить",
                                                                         action="doc_conf"))
 
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     await state.set_state(StateClsChangeCEO.prepare_data)
 
@@ -123,7 +123,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
                                                                            module=module,
                                                                            action="complete"))
 
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     await state.set_state(StateClsChangeCEO.end_of_script)
 
@@ -145,7 +145,7 @@ async def stage(message: Message, state: FSMContext):
 @logger.catch
 async def stage(callback: types.CallbackQuery, state: FSMContext):
     await callback.message.delete_reply_markup()
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
     await callback.message.answer(text="Действия отменены.")
     await state.clear()
 
@@ -156,7 +156,7 @@ async def stage(callback: types.CallbackQuery, state: FSMContext):
     """Завершение обработки документов, формирование заявки"""
 
     await callback.message.delete_reply_markup()
-    logger.info(f'User : {callback.message.from_user.id}  send: {callback.data}')
+    logger.info(f'User : {callback.from_user.id}  send: {callback.data}')
 
     await callback.message.answer(text='Благодарим за обращение!')
 
