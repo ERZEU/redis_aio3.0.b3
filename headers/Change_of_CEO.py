@@ -135,10 +135,8 @@ async def stage(message: Message, state: FSMContext):
 
     if document := message.document:
         logger.info(f'User : {message.from_user.id}  document_id: {document.file_id}')
-        # await redis.append(key=str(message.from_user.id), value=str(document.file_id))
-        # file = await bot.get_file(document.file_id)
-        # file_path = file.file_path
-        # await bot.download_file(file_path=file_path, destination=f"download_doc/{document.file_name}")
+        # сохранение документа в байт коде
+
     else:
         await message.answer(text='Неверный формат сообщения')
 
